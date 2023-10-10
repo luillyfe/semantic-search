@@ -42,6 +42,8 @@ func NeWSemanticSearch(ctx context.Context, vertexAIEndpoint string) *semanticSe
 }
 
 func (s *semanticSearch) Predict(ctx context.Context, predictions chan []*structpb.Value, content string) {
+	// Adding text embeddings parameters
+	// https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings#request_body
 	instances, err := structpb.NewValue(map[string]interface{}{"content": content})
 	if err != nil {
 		panic(err)

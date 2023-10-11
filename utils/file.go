@@ -8,7 +8,7 @@ import (
 )
 
 // Given a JSON files it reads from
-func OpenJSONFile(fileName string, Decoder interface{}, textEmdeddings chan interface{}) {
+func ReadJSON(fileName string, Decoder interface{}, textEmdeddings chan interface{}) {
 	// Open the JSON file
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -28,7 +28,7 @@ func OpenJSONFile(fileName string, Decoder interface{}, textEmdeddings chan inte
 }
 
 // Given a JSON Lines files it reads from
-func OpenJSONLinesFile(fileName string, Decoder interface{}, textEmdeddings chan interface{}) {
+func ReadJSONL(fileName string, Decoder AIDataset, linesChan chan []interface{}) {
 	// Open the JSON Lines file
 	lines, err := os.ReadFile(fileName)
 	if err != nil {
@@ -36,6 +36,7 @@ func OpenJSONLinesFile(fileName string, Decoder interface{}, textEmdeddings chan
 	}
 
 	// Decode the JSON Lines file
+
 	data := make([]interface{}, 0)
 	for _, line := range strings.Split(string(lines), "\n") {
 		if err := json.Unmarshal([]byte(line), &Decoder); err != nil {
@@ -45,5 +46,17 @@ func OpenJSONLinesFile(fileName string, Decoder interface{}, textEmdeddings chan
 	}
 
 	// Pass the text to the channel
-	textEmdeddings <- data
+	linesChan <- data
+}
+
+type AIDataset struct {
+	TextContent              string                   `json:"textContent"`
+	ClassificationAnnotation ClassificationAnnotation `json:"classificationAnnotation"`
+	DataItemResourceLabels   interface{}              `json:"dataItemResourceLabels"`
+	// Embedding                interface{}              `json:"embedding"`
+}
+
+type ClassificationAnnotation struct {
+	DisplayName              string      `json:"displayName"`
+	AnnotationResourceLabels interface{} `json:"annotationResourceLabels"`
 }

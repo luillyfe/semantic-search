@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	ai "luillyfe.com/ai/semanticSearch"
 )
 
 // Given a JSON files it reads from
@@ -28,7 +30,7 @@ func ReadJSON(fileName string, Decoder interface{}, textEmdeddings chan interfac
 }
 
 // Given a JSON Lines files it reads from
-func ReadJSONL(fileName string, Decoder AIDataset, linesChan chan []interface{}) {
+func ReadJSONL(fileName string, Decoder ai.AIDataset, linesChan chan []interface{}) {
 	// Open the JSON Lines file
 	lines, err := os.ReadFile(fileName)
 	if err != nil {
@@ -36,7 +38,6 @@ func ReadJSONL(fileName string, Decoder AIDataset, linesChan chan []interface{})
 	}
 
 	// Decode the JSON Lines file
-
 	data := make([]interface{}, 0)
 	for _, line := range strings.Split(string(lines), "\n") {
 		if err := json.Unmarshal([]byte(line), &Decoder); err != nil {
@@ -49,14 +50,26 @@ func ReadJSONL(fileName string, Decoder AIDataset, linesChan chan []interface{})
 	linesChan <- data
 }
 
-type AIDataset struct {
-	TextContent              string                   `json:"textContent"`
-	ClassificationAnnotation ClassificationAnnotation `json:"classificationAnnotation"`
-	DataItemResourceLabels   interface{}              `json:"dataItemResourceLabels"`
-	// Embedding                interface{}              `json:"embedding"`
-}
+func WriteJSONL(name string, vectors []ai.InputData) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
 
-type ClassificationAnnotation struct {
-	DisplayName              string      `json:"displayName"`
-	AnnotationResourceLabels interface{} `json:"annotationResourceLabels"`
+	for _, v := range vectors {
+		line, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = f.WriteString(string(line) + "\n")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err = f.Close()
+	if err != nil {
+		panic(err)
+	}
 }

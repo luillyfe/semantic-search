@@ -76,11 +76,6 @@ func (*semanticSearch) BuildInstance(content string) *structpb.Value {
 	return instances
 }
 
-type InputData struct {
-	Id        uuid.UUID     `json:"id"`
-	Embedding []interface{} `json:"embedding"`
-}
-
 // https: //cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings#response_body
 func GetVectors(predictions []*structpb.Value) []InputData {
 	vectorEmbeddingsChan := make(chan InputData)
@@ -105,16 +100,4 @@ func GetVectors(predictions []*structpb.Value) []InputData {
 			}
 		}
 	}
-}
-
-type AIDataset struct {
-	TextContent              string                   `json:"textContent"`
-	ClassificationAnnotation ClassificationAnnotation `json:"classificationAnnotation"`
-	DataItemResourceLabels   interface{}              `json:"dataItemResourceLabels"`
-	// Embedding                interface{}              `json:"embedding"`
-}
-
-type ClassificationAnnotation struct {
-	DisplayName              string      `json:"displayName"`
-	AnnotationResourceLabels interface{} `json:"annotationResourceLabels"`
 }

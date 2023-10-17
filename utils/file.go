@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"google.golang.org/protobuf/types/known/structpb"
 	ai "luillyfe.com/ai/semanticSearch"
 )
 
@@ -72,4 +73,43 @@ func WriteJSONL(name string, vectors []ai.InputData) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Given a Chan that holds JSONL lines it will write them to a JSONL file when they are ready
+func WriteJSONLInBatches(
+	name string,
+	predictionsChan chan []*structpb.Value,
+	buildVectors func(predictions []*structpb.Value) []ai.InputData) {
+	// Create the file
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+
+	// Loop over the channel and for each prediction Response write a batch to the JSON file (JSONL format)
+	for {
+		select {
+		case predictions := <-predictionsChan:
+			go func(vectors []ai.InputData) {
+				for _, v := range vectors {
+					line, err := json.Marshal(v)
+					if err != nil {
+						panic(err)
+					}
+
+					_, err = f.WriteString(string(line) + "\n")
+					if err != nil {
+						panic(err)
+					}
+				}
+			}(buildVectors(predictions))
+		default:
+			// TODO: better handle closing file
+			err = f.Close()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
 }

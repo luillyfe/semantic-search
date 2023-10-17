@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"google.golang.org/protobuf/types/known/structpb"
 	ai "luillyfe.com/ai/semanticSearch"
@@ -23,17 +24,37 @@ func main() {
 
 	// Build the text to embed #limit to one line to ease Results interpretation
 	lines := <-linesChan
-	dataFrame := ai.NewDataFrame(search.BuildInstance, lines[:1])
+	dataFrame := ai.NewDataFrame(search.BuildInstance, lines)
 
 	// Get Prediction Response
 	predictionsChan := make(chan []*structpb.Value)
-	go search.Predict(ctx, predictionsChan, dataFrame)
 
-	// Writing vector embeddings to file
-	predictions := <-predictionsChan
-	vectorEmbeddings := ai.GetVectors(predictions)
-	// Vector search accepts a jsonl file but it does required to name it as .json
-	utils.WriteJSONL("vectorEmbeddings.json", vectorEmbeddings)
+	// The prediction API for AutoML models has a restriction of 5 Instances per request.
+	reqInstancesLimit := 5
+	numOfRequests := 0
+	for i := 0; i <= len(dataFrame); i += reqInstancesLimit {
+		numOfRequests++
+
+		end := i + reqInstancesLimit
+		if end > len(dataFrame) {
+			end = len(dataFrame)
+		}
+
+		go func(dataInBatch []*structpb.Value) {
+			search.Predict(ctx, predictionsChan, dataInBatch)
+		}(dataFrame[i:end])
+		// TODO: Come up with a better rate limiting algorithm
+		time.Sleep(12 * time.Second)
+	}
+
+	// Writing vector embeddings in batches to JSONL file
+	utils.WriteJSONLInBatches(
+		"vectorEmbeddings.json",
+		predictionsChan,
+		ai.GetVectors,
+		// Number of issued requests to the Prediction API
+		numOfRequests,
+	)
 
 	// NewJobServiceClient
 }

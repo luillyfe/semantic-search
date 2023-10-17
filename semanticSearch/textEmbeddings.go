@@ -7,6 +7,7 @@ import (
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
+	"github.com/google/uuid"
 	"google.golang.org/api/option"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -76,7 +77,7 @@ func (*semanticSearch) BuildInstance(content string) *structpb.Value {
 }
 
 type InputData struct {
-	Id        int           `json:"id"`
+	Id        uuid.UUID     `json:"id"`
 	Embedding []interface{} `json:"embedding"`
 }
 
@@ -85,14 +86,13 @@ func GetVectors(predictions []*structpb.Value) []InputData {
 	vectorEmbeddingsChan := make(chan InputData)
 	vectorEmbeddings := make([]InputData, 0)
 
-	// TODO: Generate id
-	for id, p := range predictions {
-		go func(id int, p *structpb.Value) {
+	for _, p := range predictions {
+		go func(p *structpb.Value) {
 			for _, v := range p.GetStructValue().Fields {
 				embedding := v.GetStructValue().Fields["values"].GetListValue().AsSlice()
-				vectorEmbeddingsChan <- InputData{Id: id, Embedding: embedding}
+				vectorEmbeddingsChan <- InputData{Id: uuid.New(), Embedding: embedding}
 			}
-		}(id, p)
+		}(p)
 	}
 
 	for {

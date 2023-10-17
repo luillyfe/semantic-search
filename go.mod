@@ -4,6 +4,7 @@ go 1.21.1
 
 require (
 	cloud.google.com/go/aiplatform v1.51.0
+	github.com/google/uuid v1.3.1
 	google.golang.org/api v0.145.0
 	google.golang.org/protobuf v1.31.0
 )

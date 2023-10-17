@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"google.golang.org/protobuf/types/known/structpb"
 	ai "luillyfe.com/ai/semanticSearch"
@@ -79,37 +80,45 @@ func WriteJSONL(name string, vectors []ai.InputData) {
 func WriteJSONLInBatches(
 	name string,
 	predictionsChan chan []*structpb.Value,
-	buildVectors func(predictions []*structpb.Value) []ai.InputData) {
+	buildVectors func(predictions []*structpb.Value) []ai.InputData,
+	numReqs int) {
+	var mutex sync.Mutex
+	var wg sync.WaitGroup
 	// Create the file
 	f, err := os.Create(name)
 	if err != nil {
 		panic(err)
 	}
 
-	// Loop over the channel and for each prediction Response write a batch to the JSON file (JSONL format)
-	for {
-		select {
-		case predictions := <-predictionsChan:
-			go func(vectors []ai.InputData) {
-				for _, v := range vectors {
-					line, err := json.Marshal(v)
-					if err != nil {
-						panic(err)
-					}
-
-					_, err = f.WriteString(string(line) + "\n")
-					if err != nil {
-						panic(err)
-					}
+	// Loop over the channel and for each prediction Response
+	// write a batch to the JSON file (JSONL format)
+	for i := 0; i < numReqs; i++ {
+		predictions := <-predictionsChan
+		wg.Add(1)
+		go func(vectors []ai.InputData) {
+			defer wg.Done()
+			for _, v := range vectors {
+				line, err := json.Marshal(v)
+				if err != nil {
+					panic(err)
 				}
-			}(buildVectors(predictions))
-		default:
-			// TODO: better handle closing file
-			err = f.Close()
-			if err != nil {
-				panic(err)
+
+				mutex.Lock()
+				_, err = f.WriteString(string(line) + "\n")
+				mutex.Unlock()
+				if err != nil {
+					panic(err)
+				}
 			}
-		}
+		}(buildVectors(predictions))
+	}
+
+	wg.Wait()
+
+	// Close the file
+	err = f.Close()
+	if err != nil {
+		panic(err)
 	}
 
 }

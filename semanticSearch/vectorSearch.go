@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"os"
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
@@ -11,6 +12,9 @@ import (
 
 // Given an feature vector, it finds the most nearest neighbor in the previously set Dataset
 func Query(ctx context.Context, embedding []float32) {
+	indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
+	deployedIndexId := os.Getenv("GCP_INDEX_ID")
+
 	client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
 	if err != nil {
 		panic(err)
@@ -24,8 +28,8 @@ func Query(ctx context.Context, embedding []float32) {
 	}
 
 	request := &aiplatformpb.FindNeighborsRequest{
-		IndexEndpoint:   "projects/883567196194/locations/us-central1/indexEndpoints/4188915001454493696",
-		DeployedIndexId: "walkingindex_1697387944986",
+		IndexEndpoint:   indexEndpoint,
+		DeployedIndexId: deployedIndexId,
 		Queries:         queries,
 	}
 	response, _ := client.FindNeighbors(ctx, request)

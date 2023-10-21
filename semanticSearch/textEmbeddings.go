@@ -90,14 +90,10 @@ func GetVectors(predictions []*structpb.Value) []InputData {
 		}(p)
 	}
 
-	for {
-		select {
-		case vector := <-vectorEmbeddingsChan:
-			vectorEmbeddings = append(vectorEmbeddings, vector)
-		default:
-			if len(vectorEmbeddings) == len(predictions) {
-				return vectorEmbeddings
-			}
-		}
+	for i := 0; i < len(predictions); i++ {
+		vector := <-vectorEmbeddingsChan
+		vectorEmbeddings = append(vectorEmbeddings, vector)
 	}
+
+	return vectorEmbeddings
 }

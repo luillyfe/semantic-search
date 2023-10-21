@@ -12,13 +12,13 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type semanticSearch struct {
+type predictionClient struct {
 	endpoint string
 	client   *aiplatform.PredictionClient
 }
 
 // TODO: Better handling errors
-func NeWSemanticSearch(ctx context.Context, vertexAIEndpoint string) *semanticSearch {
+func NewPredictionClient(ctx context.Context, vertexAIEndpoint string) *predictionClient {
 	// Instantiates a client
 	predictionServiceClient, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(vertexAIEndpoint))
 	if err != nil {
@@ -39,10 +39,10 @@ func NeWSemanticSearch(ctx context.Context, vertexAIEndpoint string) *semanticSe
 		model,
 	)
 
-	return &semanticSearch{endpoint: endpoint, client: predictionServiceClient}
+	return &predictionClient{endpoint: endpoint, client: predictionServiceClient}
 }
 
-func (s *semanticSearch) Predict(ctx context.Context, predictions chan []*structpb.Value, instances []*structpb.Value) {
+func (s *predictionClient) Predict(ctx context.Context, predictions chan []*structpb.Value, instances []*structpb.Value) {
 	parameters, err := structpb.NewValue(map[string]interface{}{
 		"temperature":     0,
 		"maxOutputTokens": 256,
@@ -65,7 +65,7 @@ func (s *semanticSearch) Predict(ctx context.Context, predictions chan []*struct
 	predictions <- response.Predictions
 }
 
-func (*semanticSearch) BuildInstance(content string) *structpb.Value {
+func (*predictionClient) BuildInstance(content string) *structpb.Value {
 	// Adding text embeddings parameters
 	// https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings#request_body
 	instances, err := structpb.NewValue(map[string]interface{}{"content": content})

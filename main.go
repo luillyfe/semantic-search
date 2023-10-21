@@ -14,7 +14,7 @@ func main() {
 	// AI platform regional endpoint
 	endpoint := "us-central1-aiplatform.googleapis.com:443"
 	// Get a prediction client
-	search := ai.NeWSemanticSearch(ctx, endpoint)
+	predictClient := ai.NewPredictionClient(ctx, endpoint)
 
 	// The dataset demonstrates the use of the Text Embedding API with a vector database.
 	// gs://cloud-samples-data/vertex-ai/dataset-management/datasets/bert_finetuning/wide_and_deep_trainer_container_tests_input.jsonl
@@ -24,7 +24,8 @@ func main() {
 
 	// Build the text to embed #limit to one line to ease Results interpretation
 	lines := <-linesChan
-	dataFrame := ai.NewDataFrame(search.BuildInstance, lines)
+	// TODO: This is not responsibility of the the search engine
+	dataFrame := ai.NewDataFrame(predictClient.BuildInstance, lines)
 
 	// Get Prediction Response
 	predictionsChan := make(chan []*structpb.Value)
@@ -41,7 +42,7 @@ func main() {
 		}
 
 		go func(dataInBatch []*structpb.Value) {
-			search.Predict(ctx, predictionsChan, dataInBatch)
+			predictClient.Predict(ctx, predictionsChan, dataInBatch)
 		}(dataFrame[i:end])
 		// TODO: Come up with a better rate limiting algorithm
 		time.Sleep(12 * time.Second)

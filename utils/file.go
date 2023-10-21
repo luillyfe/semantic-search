@@ -31,6 +31,7 @@ func ReadJSON(fileName string, Decoder interface{}, textEmdeddings chan interfac
 	textEmdeddings <- Decoder
 }
 
+// TODO: Provides reading from GS Bucket
 // Given a JSON Lines files it reads from
 func ReadJSONL(fileName string, Decoder ai.AIDataset, linesChan chan []interface{}) {
 	// Open the JSON Lines file

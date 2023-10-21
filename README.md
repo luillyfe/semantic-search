@@ -2,7 +2,13 @@
 
 This project provides a step-by-step guide on how to build a semantic search engine using the Vertex AI APIs. Semantic search is a more sophisticated mechanism to find relevant content to a search rather than traditionally keyword-based. It takes relevant information that it may be not be present in the query. It does so by understanding the context of the input text that the user types on the search box like: user query history, location of user input, among others.
 
+### Limitations
+
+HERE the model we will be trained to provide answers based on semantic similarity.
+
 This project uses the following Vertex AI APIs:
+
+### APIs:
 
 **Text Embeddings API**: To generate text embeddings for the search index and the query text.
 
@@ -12,18 +18,20 @@ This project uses the following Vertex AI APIs:
 
 To get started, you will need to create a Google Cloud project. Once you have created a project, you will need to enable the Vertex AI API.
 
-Building the Search Index
+### Building the Search Index
+
 To build the search index, you will need to first generate text embeddings for the documents that you want to include in the index. You can use the Text Embeddings API to generate text embeddings.
 
 Once you have generated text embeddings for the documents, you will need to upload the embeddings to Vector Search. You can use the Vector Search API to upload the embeddings.
 
-Performing Semantic Search
+### Performing Semantic Search
+
 To perform semantic search, you will need to send a query text to the Vector Search API. The Vector Search API will return a list of documents that are semantically similar to the query text.
 
 Example
 The following code shows how to perform semantic search using the Vertex AI APIs:
 
-Go
+## Import the Vertex AI SDK for Go
 
 ```go
 import (
@@ -32,13 +40,13 @@ import (
 )
 ```
 
-# Get the Text Embeddings API client.
+## Get the text embeddings API client.
 
 ```go
 predictionServiceClient, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(vertexAIEndpoint))
 ```
 
-# Generate text embeddings for the query text.
+## Generate text embeddings for a given text.
 
 ```go
 response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
@@ -48,15 +56,7 @@ response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
 	})
 ```
 
-# Get the Vector Search API client.
-
-...
-
-# Perform semantic search on the text embeddings.
-
-...
-
-# Train a model using AutoML
+# Training a model using AutoML
 
 ```go
 ctx := context.Background()
@@ -106,9 +106,42 @@ utils.WriteJSONLInBatches(
 )
 ```
 
-# Print the search results.
+# Perform semantic search on the text embeddings.
 
-...
+## Get the Vector Search API client.
+
+```go
+indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
+deployedIndexId := os.Getenv("GCP_INDEX_ID")
+
+client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
+if err != nil {
+	panic(err)
+}
+```
+
+## Querying the model
+
+```go
+// Query the model
+queries := []*aiplatformpb.FindNeighborsRequest_Query{
+	{Datapoint: &aiplatformpb.IndexDatapoint{
+		DatapointId:   uuid.New(),
+		FeatureVector: embedding,
+	}},
+}
+
+request := &aiplatformpb.FindNeighborsRequest{
+	IndexEndpoint:   indexEndpoint,
+	DeployedIndexId: deployedIndexId,
+	Queries:         queries,
+}
+// Find all your neighbors
+response, _ := client.FindNeighbors(ctx, request)
+
+// Get the closest neighbor to your feature vector (Your query)
+response.GetNearestNeighbors()
+```
 
 # Conclusion
 

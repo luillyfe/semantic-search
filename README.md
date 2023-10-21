@@ -54,7 +54,7 @@ response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
 	})
 ```
 
-# Training a model using an AutoML
+# Training a model using AutoML
 
 ```go
 ctx := context.Background()

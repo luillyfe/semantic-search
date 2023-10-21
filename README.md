@@ -106,7 +106,38 @@ utils.WriteJSONLInBatches(
 )
 ```
 
-# Print the search results.
+# Querying the model
+
+```go
+// Get the endpoint of our deployed index
+indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
+deployedIndexId := os.Getenv("GCP_INDEX_ID")
+
+// Get the client
+client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
+if err != nil {
+	panic(err)
+}
+
+// Query the model
+queries := []*aiplatformpb.FindNeighborsRequest_Query{
+	{Datapoint: &aiplatformpb.IndexDatapoint{
+		DatapointId:   uuid.New(),
+		FeatureVector: embedding,
+	}},
+}
+
+request := &aiplatformpb.FindNeighborsRequest{
+	IndexEndpoint:   indexEndpoint,
+	DeployedIndexId: deployedIndexId,
+	Queries:         queries,
+}
+// Find all your neighbors
+response, _ := client.FindNeighbors(ctx, request)
+
+// Get the closest neighbor to your feature vector (Your query)
+response.GetNearestNeighbors()
+```
 
 ...
 

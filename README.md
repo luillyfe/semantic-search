@@ -2,11 +2,13 @@
 
 This project provides a step-by-step guide on how to build a semantic search engine using the Vertex AI APIs. Semantic search is a more sophisticated mechanism to find relevant content to a search rather than traditionally keyword-based. It takes relevant information that it may be not be present in the query. It does so by understanding the context of the input text that the user types on the search box like: user query history, location of user input, among others.
 
-# Limitations
+### Limitations
 
 HERE the model we will be trained to provide answers based on semantic similarity.
 
 This project uses the following Vertex AI APIs:
+
+### APIs:
 
 **Text Embeddings API**: To generate text embeddings for the search index and the query text.
 

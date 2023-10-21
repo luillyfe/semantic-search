@@ -17,16 +17,13 @@ func NewDataFrame(buildInstance func(line string) *structpb.Value, lines []inter
 		}(line)
 	}
 
-	for {
-		select {
-		case dataLine := <-dataFrameChan:
-			dataFrame = append(dataFrame, dataLine)
-		default:
-			if len(dataFrame) == len(lines) {
-				return dataFrame
-			}
-		}
+	for i := 0; i < len(lines); i++ {
+		dataLine := <-dataFrameChan
+		dataFrame = append(dataFrame, dataLine)
 	}
+	close(dataFrameChan)
+
+	return dataFrame
 }
 
 func Filter(slice []*structpb.Value, filter func(v *structpb.Value) bool) []*structpb.Value {

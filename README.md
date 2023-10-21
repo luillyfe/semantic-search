@@ -38,7 +38,7 @@ import (
 predictionServiceClient, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(vertexAIEndpoint))
 ```
 
-# Generate text embeddings for the query text.
+# Generate text embeddings for a given text.
 
 ```go
 response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
@@ -47,14 +47,6 @@ response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
 		Parameters: parameters,
 	})
 ```
-
-# Get the Vector Search API client.
-
-...
-
-# Perform semantic search on the text embeddings.
-
-...
 
 # Train a model using AutoML
 
@@ -106,19 +98,27 @@ utils.WriteJSONLInBatches(
 )
 ```
 
-# Querying the model
+# Get the Vector Search API client.
 
 ```go
-// Get the endpoint of our deployed index
 indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
 deployedIndexId := os.Getenv("GCP_INDEX_ID")
 
-// Get the client
 client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
 if err != nil {
 	panic(err)
 }
+```
 
+...
+
+# Perform semantic search on the text embeddings.
+
+...
+
+# Querying the model
+
+```go
 // Query the model
 queries := []*aiplatformpb.FindNeighborsRequest_Query{
 	{Datapoint: &aiplatformpb.IndexDatapoint{

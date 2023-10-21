@@ -111,9 +111,6 @@ utils.WriteJSONLInBatches(
 ## Get the Vector Search API client.
 
 ```go
-indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
-deployedIndexId := os.Getenv("GCP_INDEX_ID")
-
 client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
 if err != nil {
 	panic(err)
@@ -123,10 +120,13 @@ if err != nil {
 ## Querying the model
 
 ```go
+indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
+deployedIndexId := os.Getenv("GCP_INDEX_ID")
+
 // Query the model
 queries := []*aiplatformpb.FindNeighborsRequest_Query{
 	{Datapoint: &aiplatformpb.IndexDatapoint{
-		DatapointId:   uuid.New(),
+		DatapointId:   uuid.NewString(),
 		FeatureVector: embedding,
 	}},
 }

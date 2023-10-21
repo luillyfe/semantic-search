@@ -2,27 +2,35 @@ package ai
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
+	"github.com/google/uuid"
 	"google.golang.org/api/option"
 )
 
-// Given an feature vector, it finds the most nearest neighbor in the previously set Dataset
-func Query(ctx context.Context, embedding []float32) {
-	indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
-	deployedIndexId := os.Getenv("GCP_INDEX_ID")
+type semanticSearch struct {
+	client *aiplatform.MatchClient
+}
 
+func NewSemanticSearch(ctx context.Context) *semanticSearch {
 	client, err := aiplatform.NewMatchClient(ctx, option.WithEndpoint("102531040.us-central1-145252452137.vdb.vertexai.goog"))
 	if err != nil {
 		panic(err)
 	}
 
+	return &semanticSearch{client: client}
+}
+
+// Given an feature vector, it finds the most nearest neighbor in the previously set Dataset
+func (s *semanticSearch) Query(ctx context.Context, embedding []float32) []*aiplatformpb.FindNeighborsResponse_NearestNeighbors {
+	indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
+	deployedIndexId := os.Getenv("GCP_INDEX_ID")
+
 	queries := []*aiplatformpb.FindNeighborsRequest_Query{
 		{Datapoint: &aiplatformpb.IndexDatapoint{
-			DatapointId:   "0",
+			DatapointId:   uuid.NewString(),
 			FeatureVector: embedding,
 		}},
 	}
@@ -32,9 +40,9 @@ func Query(ctx context.Context, embedding []float32) {
 		DeployedIndexId: deployedIndexId,
 		Queries:         queries,
 	}
-	response, _ := client.FindNeighbors(ctx, request)
+	response, _ := s.client.FindNeighbors(ctx, request)
 
-	fmt.Println(response.GetNearestNeighbors())
+	return response.GetNearestNeighbors()
 }
 
 func ToFloat32(s []interface{}) []float32 {

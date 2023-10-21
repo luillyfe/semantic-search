@@ -48,7 +48,7 @@ response, err := s.client.Predict(ctx, &aiplatformpb.PredictRequest{
 	})
 ```
 
-# Train a model using AutoML
+# Training a model using an AutoML
 
 ```go
 ctx := context.Background()
@@ -98,7 +98,9 @@ utils.WriteJSONLInBatches(
 )
 ```
 
-# Get the Vector Search API client.
+# Perform semantic search on the text embeddings.
+
+## Get the Vector Search API client.
 
 ```go
 indexEndpoint := os.Getenv("GCP_INDEX_ENDPOINT")
@@ -110,13 +112,7 @@ if err != nil {
 }
 ```
 
-...
-
-# Perform semantic search on the text embeddings.
-
-...
-
-# Querying the model
+## Querying the model
 
 ```go
 // Query the model

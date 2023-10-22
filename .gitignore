@@ -23,3 +23,6 @@ go.work
 #
 .env.sh
 index_metadata.json
+
+# Visual Studio Code
+.vscode/**

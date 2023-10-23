@@ -43,7 +43,6 @@ paths:
           in: body
           required: true
           schema:
-            type: string
             $ref: "#/definitions/Query"
 externalDocs:
   description: Find out more about this Semantic Search project

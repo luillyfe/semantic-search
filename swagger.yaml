@@ -1,0 +1,77 @@
+# Describes the Web APIs that Semantic Search Exposes
+swagger: "2.0"
+host: "--" # TODO: fix URL Server
+info:
+  description: >-
+    Semantic search provides semantic similarity answers to queries.
+  version: 1.0.0
+  title: Semantic Search
+  license:
+    name: MIT License
+    url: "https://github.com/luillyfe/semantic-search/blob/master/LICENSE"
+tags:
+  - name: semantic-search
+    description:
+      Use artificial intelligence to understand the meaning of text and to return relevant
+      results based on that understanding.
+paths:
+  /:
+    post:
+      tags:
+        - semantic-search
+      summary: Return semantic similarity results
+      description:
+        Return relevant results based on its semantic similarity with other
+        items in the Datasource.
+      produces:
+        - application/json
+        - application/xml
+      operationId: getSematicSimilarityResults
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: array
+            $ref: "#/definitions/Results"
+        "405":
+          description: Invalid query
+      security:
+        - search_auth:
+            - "read:results"
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Query"
+externalDocs:
+  description: Find out more about this Semantic Search project
+  url: "https://luillyfe.medium.com/building-a-semantic-search-with-vertex-ai-f3ff5303de6a"
+definitions:
+  Query:
+    title: a Query
+    description: A query that will be analyze in order to get its most sematic similar items in the Datasource.
+    type: string
+    xml:
+      name: Query
+  Result:
+    title: a Result
+    description: A semantic similar result for a given query
+    type: string
+    xml:
+      name: Result
+  Results:
+    title: a list of Results
+    description: A collection of semantic similar results for a given query
+    type: array
+    items:
+      $ref: "#/definitions/Result"
+    xml:
+      name: Results
+securityDefinitions:
+  search_auth:
+    type: oauth2
+    flow: "implicit"
+    authorizationUrl: "api/oauth/dialog" # TODO: fix authorization URL
+    scopes:
+      "read:results": read the results for a given query

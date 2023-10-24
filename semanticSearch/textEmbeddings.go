@@ -42,6 +42,7 @@ func NewPredictionClient(ctx context.Context, vertexAIEndpoint string) *predicti
 	return &predictionClient{endpoint: endpoint, client: predictionServiceClient}
 }
 
+// TODO: There is no need for a channel. whether make it concurrent or remove channel.
 func (s *predictionClient) Predict(ctx context.Context, predictions chan []*structpb.Value, instances []*structpb.Value) {
 	parameters, err := structpb.NewValue(map[string]interface{}{
 		"temperature":     0,
